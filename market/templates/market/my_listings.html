@@ -1,0 +1,71 @@
+{% extends "market/base.html" %}
+{% block title %}My Ads - BBDOLX{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold">My listings</h1>
+  <a href="{% url 'product_add' %}"
+     class="text-sm bg-teal-500 text-white px-4 py-1.5 rounded-full font-semibold hover:bg-teal-600">
+    + Post new ad
+  </a>
+</div>
+
+{% if products %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+    {% for product in products %}
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+        <a href="{% url 'product_detail' product.pk %}">
+          <div class="aspect-[4/3] bg-slate-100 overflow-hidden">
+            <img src="{{ product.image.url }}" class="w-full h-full object-cover">
+          </div>
+        </a>
+        <div class="p-3 space-y-1">
+          <p class="text-sm font-semibold">₹ {{ product.price }}</p>
+          <p class="text-xs text-slate-700 line-clamp-2">{{ product.title }}</p>
+
+          <!-- date + status -->
+          <p class="text-[11px] text-slate-400">
+            {{ product.created_at|date:"d M, Y" }}
+            {% if product.is_sold %}
+              • <span class="text-red-500 font-semibold">SOLD</span>
+            {% else %}
+              •
+              {% if product.status == 'PENDING' %}
+                <span class="text-amber-500 font-semibold">PENDING REVIEW</span>
+              {% elif product.status == 'APPROVED' %}
+                <span class="text-green-600 font-semibold">APPROVED</span>
+              {% elif product.status == 'REJECTED' %}
+                <span class="text-red-500 font-semibold">REJECTED</span>
+              {% endif %}
+            {% endif %}
+          </p>
+
+          {% if product.status == 'REJECTED' and product.rejection_reason %}
+            <p class="text-[11px] text-red-400 mt-1">
+              Reason: {{ product.rejection_reason }}
+            </p>
+          {% endif %}
+
+          <div class="flex gap-2 mt-2">
+            <a href="{% url 'product_edit' product.pk %}"
+               class="flex-1 text-center text-[11px] border border-slate-300 rounded-full py-1 hover:border-teal-500">
+              Edit
+            </a>
+            {% if not product.is_sold %}
+              <a href="{% url 'product_sold' product.pk %}"
+                 class="flex-1 text-center text-[11px] rounded-full py-1 bg-teal-500 text-white hover:bg-teal-600">
+                Mark sold
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="bg-white rounded-xl p-6 text-center text-sm text-slate-500">
+    You haven’t posted anything yet.
+    <a href="{% url 'product_add' %}" class="text-teal-600 font-semibold">Create your first ad.</a>
+  </div>
+{% endif %}
+{% endblock %}

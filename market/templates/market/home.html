@@ -1,0 +1,122 @@
+{% extends "market/base.html" %}
+{% block title %}BBDOLX – Buy & Sell in BBD Campus{% endblock %}
+
+{% block content %}
+<div class="space-y-10">
+
+  <!-- TOP FILTER BAR -->
+  <section class="bg-white rounded-2xl shadow-sm px-4 md:px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+    <div class="flex items-center gap-2 text-sm">
+      <span class="hidden sm:inline text-slate-500">Filter by:</span>
+
+      <form method="get" action="{% url 'home' %}" class="flex items-center gap-2">
+        {% if query %}
+          <input type="hidden" name="q" value="{{ query }}">
+        {% endif %}
+
+        <select name="category"
+                onchange="this.form.submit()"
+                class="text-sm border border-slate-300 rounded-full px-3 py-1.5 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+            <option value="{{ cat.slug }}" {% if category_slug == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </form>
+
+      <span class="text-xs text-slate-400">
+        {{ products|length }} result{% if products|length != 1 %}s{% endif %}
+      </span>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 text-xs">
+      <button class="px-3 py-1.5 rounded-full border hover:border-teal-500">Newest first</button>
+      <button class="px-3 py-1.5 rounded-full border hover:border-teal-500">Lowest price</button>
+      <button class="px-3 py-1.5 rounded-full border hover:border-teal-500">Highest price</button>
+    </div>
+  </section>
+
+  <!-- QUICK CATEGORIES (STATIC + PRO LOOK) -->
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">Quick Categories</h2>
+
+    <div class="grid grid-cols-4 md:grid-cols-8 gap-4 text-center">
+
+      {% for icon, label, slug in quick_categories %}
+        <a href="?category={{ slug }}" class="flex flex-col items-center gap-1 hover:text-teal-600">
+          <div class="h-14 w-14 flex items-center justify-center rounded-full bg-slate-100 text-2xl shadow">
+            {{ icon }}
+          </div>
+          <span class="text-xs">{{ label }}</span>
+        </a>
+      {% endfor %}
+
+    </div>
+  </section>
+
+  <!-- POPULAR CATEGORIES -->
+  <section class="space-y-3">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-semibold">Popular Categories</h2>
+    </div>
+
+    <div class="flex gap-5 overflow-x-auto pb-1 scrollbar-thin">
+      {% for cat in categories %}
+        <a href="?category={{ cat.slug }}" class="flex flex-col items-center gap-2 min-w-[80px] group">
+          <div class="h-16 w-16 rounded-full border bg-white flex items-center justify-center shadow-sm group-hover:border-teal-500 group-hover:shadow-md transition">
+            <span class="text-xl">{{ cat.name|slice:":1" }}</span>
+          </div>
+          <span class="text-xs text-slate-600 group-hover:text-teal-600">{{ cat.name }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- INFO STRIP -->
+  <section class="grid md:grid-cols-3 gap-3 text-xs">
+    <div class="bg-white rounded-2xl shadow-sm px-4 py-3 flex items-center gap-3">
+      <div class="h-8 w-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 text-lg">🎓</div>
+      <div><p class="font-semibold">Only BBD Students</p><p class="text-slate-500">Verified email login</p></div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm px-4 py-3 flex items-center gap-3">
+      <div class="h-8 w-8 rounded-full bg-sky-50 flex items-center justify-center text-sky-600 text-lg">🤝</div>
+      <div><p class="font-semibold">Meet on Campus</p><p class="text-slate-500">No delivery issues</p></div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm px-4 py-3 flex items-center gap-3">
+      <div class="h-8 w-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 text-lg">⚠️</div>
+      <div><p class="font-semibold">Verified Listings</p><p class="text-slate-500">Safe marketplace</p></div>
+    </div>
+  </section>
+
+  <!-- ITEMS GRID -->
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">Fresh Recommendations</h2>
+
+    {% if products %}
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {% for product in products %}
+          <a href="{% url 'product_detail' product.pk %}" class="bg-white rounded-2xl shadow-sm hover:shadow-md transition border group">
+
+            <div class="relative aspect-[4/3] bg-slate-100">
+              <img src="{{ product.image.url }}" class="w-full h-full object-cover group-hover:scale-105 transition">
+              <div class="absolute top-2 right-2 h-8 w-8 bg-white rounded-full shadow flex items-center justify-center">❤️</div>
+            </div>
+
+            <div class="p-3">
+              <p class="font-semibold">₹ {{ product.price }}</p>
+              <p class="text-xs text-slate-700 line-clamp-2">{{ product.title }}</p>
+              <p class="text-[11px] text-slate-400">{{ product.city_campus }} • {{ product.created_at|date:"d M" }}</p>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="bg-white rounded-xl p-8 text-center text-sm text-slate-500">
+        No items found.  
+        <a href="{% url 'product_add' %}" class="block mt-2 text-teal-600 underline">Post your first ad</a>
+      </div>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}

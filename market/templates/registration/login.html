@@ -1,0 +1,51 @@
+{% extends "market/base.html" %}
+{% block title %}Login - BBDOLX{% endblock %}
+
+{% block content %}
+<div class="min-h-[60vh] flex items-center justify-center">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-sm p-6 card-animate">
+    <h1 class="text-xl font-semibold mb-2">Login to BBDOLX</h1>
+    <p class="text-xs text-slate-500 mb-4">
+      Use your registered BBD email and password.
+    </p>
+
+    {% if form.errors %}
+      <div class="mb-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+        Invalid username or password. Please try again.
+      </div>
+    {% endif %}
+
+    <form method="post" action="" class="space-y-4">
+      {% csrf_token %}
+      <div class="text-sm">
+        <label class="block mb-1 font-medium">Username</label>
+        {{ form.username }}
+      </div>
+      <div class="text-sm">
+        <label class="block mb-1 font-medium">Password</label>
+        {{ form.password }}
+      </div>
+
+      <button
+        class="w-full mt-2 bg-teal-500 text-white py-2 rounded-full text-sm font-semibold hover:bg-teal-600">
+        Login
+      </button>
+    </form>
+
+    <p class="mt-4 text-xs text-slate-500 text-center">
+      Don’t have an account?
+      <a href="{% url 'register' %}" class="text-teal-600 font-semibold">Sign up</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  // Tailwind-like styling on auth fields
+  document.querySelectorAll('input').forEach(el => {
+    el.classList.add(
+      'w-full','border','border-slate-300','rounded-lg','px-3','py-2','text-sm',
+      'focus:outline-none','focus:ring-2','focus:ring-teal-500'
+    );
+  });
+</script>
+{% endblock %}

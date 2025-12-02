@@ -1,0 +1,18 @@
+{% extends "market/base.html" %}
+{% block title %}Reject Ad - BBDOLX{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto bg-white rounded-2xl shadow-sm p-6">
+  <h1 class="text-lg font-semibold mb-3">Reject "{{ product.title }}"</h1>
+  <form method="post" class="space-y-3">
+    {% csrf_token %}
+    <label class="block text-sm font-medium mb-1">Reason (optional but recommended)</label>
+    <textarea name="reason" rows="4"
+              class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
+    <button class="mt-2 bg-red-500 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-red-600">
+      Confirm Reject
+    </button>
+  </form>
+</div>
+{% endblock %}

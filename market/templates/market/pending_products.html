@@ -1,0 +1,45 @@
+{% extends "market/base.html" %}
+{% block title %}Pending Approvals – Admin{% endblock %}
+
+{% block content %}
+<h1 class="text-xl font-semibold mb-4">Pending Approvals</h1>
+
+<div class="grid gap-4">
+  {% for p in products %}
+  <div class="bg-white rounded-xl shadow-sm p-4 flex gap-4 items-start border border-slate-200">
+    
+    <img src="{{ p.image.url }}" class="h-24 w-24 rounded-lg object-cover">
+
+    <div class="flex-1">
+      <p class="text-sm font-semibold">{{ p.title }}</p>
+      <p class="text-xs text-slate-500">₹{{ p.price }} • {{ p.category.name }}</p>
+      <p class="text-xs text-slate-500">Seller: {{ p.owner.username }}</p>
+      <p class="text-xs text-slate-400">Posted: {{ p.created_at|date:"d M, Y" }}</p>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <!-- Approve -->
+      <form method="post" action="{% url 'approve_product' p.pk %}">
+        {% csrf_token %}
+        <button
+          class="bg-emerald-500 text-white text-xs px-4 py-2 rounded-full hover:bg-emerald-600 transition">
+          Approve
+        </button>
+      </form>
+
+      <!-- Reject -->
+      <a href="{% url 'reject_product' p.pk %}"
+         class="bg-red-500 text-white text-xs px-4 py-2 rounded-full hover:bg-red-600 transition text-center">
+        Reject
+      </a>
+    </div>
+
+  </div>
+  {% empty %}
+  <div class="bg-white p-6 rounded-xl text-center text-slate-500">
+    No pending ads.
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
