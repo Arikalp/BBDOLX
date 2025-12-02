@@ -15,27 +15,44 @@
     {% for product in products %}
       <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
         <a href="{% url 'product_detail' product.pk %}">
-          <div class="aspect-[4/3] bg-slate-100 overflow-hidden">
+          <div class="relative aspect-[4/3] bg-slate-100 overflow-hidden">
             <img src="{{ product.image.url }}" class="w-full h-full object-cover">
+
+            {% if product.status == 'SOLD' %}
+              <span class="absolute top-2 left-2 bg-black/75 text-white text-[10px] px-2 py-0.5 rounded">
+                SOLD OUT
+              </span>
+            {% endif %}
           </div>
         </a>
+
         <div class="p-3 space-y-1">
           <p class="text-sm font-semibold">₹ {{ product.price }}</p>
           <p class="text-xs text-slate-700 line-clamp-2">{{ product.title }}</p>
 
           <!-- date + status -->
-          <p class="text-[11px] text-slate-400">
+          <p class="text-[11px] text-slate-400 flex items-center gap-1">
             {{ product.created_at|date:"d M, Y" }}
-            {% if product.is_sold %}
-              • <span class="text-red-500 font-semibold">SOLD</span>
+
+            {% if product.status == 'SOLD' %}
+              •
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-semibold">
+                SOLD OUT
+              </span>
             {% else %}
               •
               {% if product.status == 'PENDING' %}
-                <span class="text-amber-500 font-semibold">PENDING REVIEW</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold">
+                  PENDING REVIEW
+                </span>
               {% elif product.status == 'APPROVED' %}
-                <span class="text-green-600 font-semibold">APPROVED</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold">
+                  APPROVED
+                </span>
               {% elif product.status == 'REJECTED' %}
-                <span class="text-red-500 font-semibold">REJECTED</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-semibold">
+                  REJECTED
+                </span>
               {% endif %}
             {% endif %}
           </p>
@@ -47,17 +64,22 @@
           {% endif %}
 
           <div class="flex gap-2 mt-2">
-            <a href="{% url 'product_edit' product.pk %}"
-               class="flex-1 text-center text-[11px] border border-slate-300 rounded-full py-1 hover:border-teal-500">
-              Edit
-            </a>
-            {% if not product.is_sold %}
-              <a href="{% url 'product_sold' product.pk %}"
-                 class="flex-1 text-center text-[11px] rounded-full py-1 bg-teal-500 text-white hover:bg-teal-600">
-                Mark sold
-              </a>
-            {% endif %}
-          </div>
+  <a href="{% url 'product_edit' product.pk %}"
+     class="flex-1 text-center text-[11px] border border-slate-300 rounded-full py-1 hover:border-teal-500">
+    Edit
+  </a>
+
+  {% if product.status != 'SOLD' %}
+    <form method="post" action="{% url 'product_sold' product.pk %}" class="flex-1">
+      {% csrf_token %}
+      <button type="submit"
+              class="w-full text-center text-[11px] rounded-full py-1 bg-teal-500 text-white hover:bg-teal-600">
+        Mark sold
+      </button>
+    </form>
+  {% endif %}
+</div>
+
         </div>
       </div>
     {% endfor %}

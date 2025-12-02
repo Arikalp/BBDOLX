@@ -1,0 +1,224 @@
+{% extends "market/base.html" %}
+{% block title %}Admin – Moderate Ads{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-semibold">Moderate Listings</h1>
+    <span class="text-xs text-slate-500">Only visible to staff users</span>
+  </div>
+
+  <!-- Stats cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm">
+    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
+      <p class="text-xs text-slate-500 mb-1">Pending</p>
+      <p class="text-2xl font-semibold text-amber-500">{{ stats.PENDING }}</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
+      <p class="text-xs text-slate-500 mb-1">Approved</p>
+      <p class="text-2xl font-semibold text-emerald-500">{{ stats.APPROVED }}</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
+      <p class="text-xs text-slate-500 mb-1">Rejected</p>
+      <p class="text-2xl font-semibold text-rose-500">{{ stats.REJECTED }}</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
+      <p class="text-xs text-slate-500 mb-1">Sold</p>
+      <p class="text-2xl font-semibold text-slate-700">{{ stats.SOLD }}</p>
+    </div>
+  </div>
+
+  <!-- Tabs with small badges -->
+  <div class="flex gap-2 text-xs">
+    <a href="?status=PENDING"
+       class="px-3 py-1.5 rounded-full border flex items-center gap-1
+              {% if status_filter == 'PENDING' %} bg-amber-50 border-amber-400 text-amber-700 {% else %} bg-slate-50 border-slate-200 {% endif %}">
+      Pending
+      <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-white text-[10px] font-semibold">
+        {{ stats.PENDING }}
+      </span>
+    </a>
+
+    <a href="?status=APPROVED"
+       class="px-3 py-1.5 rounded-full border flex items-center gap-1
+              {% if status_filter == 'APPROVED' %} bg-emerald-50 border-emerald-400 text-emerald-700 {% else %} bg-slate-50 border-slate-200 {% endif %}">
+      Approved
+      <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-white text-[10px] font-semibold">
+        {{ stats.APPROVED }}
+      </span>
+    </a>
+
+    <a href="?status=REJECTED"
+       class="px-3 py-1.5 rounded-full border flex items-center gap-1
+              {% if status_filter == 'REJECTED' %} bg-rose-50 border-rose-400 text-rose-700 {% else %} bg-slate-50 border-slate-200 {% endif %}">
+      Rejected
+      <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] h-[18px] rounded-full bg-white text-[10px] font-semibold">
+        {{ stats.REJECTED }}
+      </span>
+    </a>
+
+    <a href="?status=SOLD"
+       class="px-3 py-1.5 rounded-full border flex items-center gap-1
+              {% if status_filter == 'SOLD' %} bg-slate-900 text-white border-slate-900 {% else %} bg-slate-50 border-slate-200 {% endif %}">
+      Sold
+      <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-white/90 text-[10px] font-semibold">
+        {{ stats.SOLD }}
+      </span>
+    </a>
+
+    <a href="?status=ALL"
+       class="px-3 py-1.5 rounded-full border
+              {% if status_filter == 'ALL' %} bg-slate-900 text-white border-slate-900 {% else %} bg-slate-50 border-slate-200 {% endif %}">
+      All
+    </a>
+  </div>
+
+  <!-- Products list -->
+  <div class="space-y-3">
+    {% for p in products %}
+      <div class="bg-white rounded-xl shadow-sm p-4 flex gap-4 items-start border border-slate-100 card-animate">
+        <div class="h-20 w-20 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0 relative">
+          <img src="{{ p.image.url }}" class="w-full h-full object-cover">
+          {% if p.status == 'SOLD' %}
+            <span class="absolute bottom-1 left-1 bg-black/75 text-white text-[10px] px-2 py-0.5 rounded">
+              SOLD OUT
+            </span>
+          {% endif %}
+        </div>
+
+        <div class="flex-1 space-y-1 text-sm">
+          <p class="font-semibold text-slate-900">{{ p.title }}</p>
+          <p class="text-xs text-slate-500">
+            ₹{{ p.price }} • {{ p.category.name }} • {{ p.city_campus }}
+          </p>
+          <p class="text-[11px] text-slate-400">
+            Posted by <span class="font-medium text-slate-600">{{ p.owner.username }}</span>
+            on {{ p.created_at|date:"d M, Y H:i" }}
+          </p>
+
+          {% if p.rejection_reason %}
+            <p class="text-[11px] text-rose-500">
+              Last reject reason: {{ p.rejection_reason }}
+            </p>
+          {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col gap-2 text-xs w-44">
+          {% if p.status == 'PENDING' %}
+            <!-- Pending: Approve + Reject -->
+            <form method="post" action="{% url 'approve_product' p.pk %}">
+              {% csrf_token %}
+              <button class="w-full bg-emerald-500 text-white rounded-full py-1.5 hover:bg-emerald-600">
+                Approve
+              </button>
+            </form>
+
+            <button onclick="openRejectModal({{ p.pk }}, '{{ p.title|escapejs }}')"
+                    class="w-full bg-rose-500 text-white rounded-full py-1.5 hover:bg-rose-600">
+              Reject
+            </button>
+
+          {% elif p.status == 'REJECTED' %}
+            <!-- Rejected: can approve again -->
+            <form method="post" action="{% url 'approve_product' p.pk %}">
+              {% csrf_token %}
+              <button class="w-full bg-emerald-500 text-white rounded-full py-1.5 hover:bg-emerald-600">
+                Approve again
+              </button>
+            </form>
+
+            <button onclick="openRejectModal({{ p.pk }}, '{{ p.title|escapejs }}')"
+                    class="w-full bg-slate-200 text-slate-700 rounded-full py-1.5 hover:bg-slate-300">
+              Edit reason
+            </button>
+
+          {% elif p.status == 'APPROVED' %}
+            <!-- Approved: badge only -->
+            <span class="inline-flex items-center justify-center rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 py-1.5">
+              Approved
+            </span>
+
+          {% elif p.status == 'SOLD' %}
+            <!-- Sold: show badge + undo button -->
+            <span class="inline-flex items-center justify-center rounded-full bg-slate-900 text-white py-1.5">
+              Sold out
+            </span>
+            <form method="post" action="{% url 'approve_product' p.pk %}">
+              {% csrf_token %}
+              <button class="w-full bg-teal-500 text-white rounded-full py-1.5 hover:bg-teal-600">
+                Make active again
+              </button>
+            </form>
+          {% endif %}
+
+          <!-- Delete for ALL statuses -->
+          <form method="post"
+                action="{% url 'delete_product' p.pk %}"
+                onsubmit="return confirm('Are you sure you want to delete this ad permanently? This cannot be undone.');">
+            {% csrf_token %}
+            <button type="submit"
+                    class="w-full bg-red-50 text-red-600 border border-red-200 rounded-full py-1.5 hover:bg-red-100">
+              Delete ad
+            </button>
+          </form>
+        </div>
+      </div>
+    {% empty %}
+      <div class="bg-white rounded-xl p-8 text-center text-sm text-slate-500">
+        No ads found for this filter.
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- Reject modal -->
+<div id="rejectModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-5 space-y-4">
+    <h2 class="text-sm font-semibold mb-1">Reject ad</h2>
+    <p class="text-xs text-slate-500 mb-2">
+      You are rejecting: <span id="rejectTitle" class="font-medium"></span>
+    </p>
+
+    <form id="rejectForm" method="post">
+      {% csrf_token %}
+      <textarea name="reason" rows="3"
+                class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                placeholder="Reason for rejection (will be sent to the seller)"></textarea>
+
+      <div class="flex justify-end gap-2 mt-3 text-xs">
+        <button type="button" onclick="closeRejectModal()"
+                class="px-4 py-1.5 rounded-full border border-slate-300">
+          Cancel
+        </button>
+        <button type="submit"
+                class="px-4 py-1.5 rounded-full bg-rose-500 text-white hover:bg-rose-600">
+          Reject ad
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openRejectModal(id, title) {
+    const modal = document.getElementById('rejectModal');
+    const form = document.getElementById('rejectForm');
+    const titleSpan = document.getElementById('rejectTitle');
+
+    form.action = "{% url 'reject_product' 0 %}".replace('/0/', '/' + id + '/');
+    titleSpan.textContent = title;
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeRejectModal() {
+    const modal = document.getElementById('rejectModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+</script>
+{% endblock %}

@@ -4,20 +4,37 @@
 {% block content %}
 <div class="grid md:grid-cols-3 gap-6">
   <!-- IMAGE -->
-  <div class="md:col-span-2 bg-white rounded-2xl shadow-sm overflow-hidden">
+  <div class="md:col-span-2 bg-white rounded-2xl shadow-sm overflow-hidden relative">
     <img src="{{ product.image.url }}" alt="{{ product.title }}" class="w-full object-cover max-h-[480px]">
+
+    {% if product.status == 'SOLD' %}
+      <span class="absolute top-3 left-3 bg-black/75 text-white text-xs px-3 py-1 rounded-full">
+        SOLD OUT
+      </span>
+    {% endif %}
   </div>
 
   <!-- INFO CARD -->
   <div class="space-y-4">
     <div class="bg-white rounded-2xl shadow-sm p-4 space-y-2">
       <p class="text-2xl font-semibold">₹ {{ product.price }}</p>
-      <h1 class="text-lg font-semibold">{{ product.title }}</h1>
-      {% if product.is_sold %}
-        <span class="inline-block text-xs px-2 py-1 rounded-full bg-red-100 text-red-600 font-semibold">SOLD</span>
-      {% endif %}
-      <p class="text-xs text-slate-500">{{ product.city_campus }} • {{ product.created_at|date:"d M, Y" }}</p>
-      <p class="text-xs text-slate-500">Category: {{ product.category.name }} • Condition: {{ product.get_condition_display }}</p>
+
+      <h1 class="text-lg font-semibold flex items-center gap-2">
+        {{ product.title }}
+        {% if product.status == 'SOLD' %}
+          <span class="inline-block text-[11px] px-2 py-1 rounded-full bg-red-500 text-white font-semibold">
+            SOLD OUT
+          </span>
+        {% endif %}
+      </h1>
+
+      <p class="text-xs text-slate-500">
+        {{ product.city_campus }} • {{ product.created_at|date:"d M, Y" }}
+      </p>
+
+      <p class="text-xs text-slate-500">
+        Category: {{ product.category.name }} • Condition: {{ product.get_condition_display }}
+      </p>
     </div>
 
     <div class="bg-white rounded-2xl shadow-sm p-4 space-y-2">
@@ -30,19 +47,24 @@
     </div>
 
     {% if user == product.owner %}
-      <div class="bg-white rounded-2xl shadow-sm p-4 flex gap-3">
-        <a href="{% url 'product_edit' product.pk %}"
-           class="flex-1 text-center text-sm font-semibold border border-slate-300 rounded-full py-2 hover:border-teal-500">
-          Edit Ad
-        </a>
-        {% if not product.is_sold %}
-          <a href="{% url 'product_sold' product.pk %}"
-             class="flex-1 text-center text-sm font-semibold rounded-full py-2 bg-teal-500 text-white hover:bg-teal-600">
-            Mark as sold
-          </a>
-        {% endif %}
-      </div>
+  <div class="bg-white rounded-2xl shadow-sm p-4 flex gap-3">
+    <a href="{% url 'product_edit' product.pk %}"
+       class="flex-1 text-center text-sm font-semibold border border-slate-300 rounded-full py-2 hover:border-teal-500">
+      Edit Ad
+    </a>
+
+    {% if product.status != 'SOLD' %}
+      <form method="post" action="{% url 'product_sold' product.pk %}" class="flex-1">
+        {% csrf_token %}
+        <button type="submit"
+                class="w-full text-center text-sm font-semibold rounded-full py-2 bg-teal-500 text-white hover:bg-teal-600">
+          Mark as sold
+        </button>
+      </form>
     {% endif %}
+  </div>
+{% endif %}
+
   </div>
 </div>
 

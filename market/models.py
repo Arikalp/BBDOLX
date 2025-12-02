@@ -33,6 +33,8 @@ class Product(models.Model):
         ('PENDING', 'Pending Review'),
         ('APPROVED', 'Approved'),
         ('REJECTED', 'Rejected'),
+        ('SOLD', 'Sold Out'),          
+
     ]
 
     title = models.CharField(max_length=200)

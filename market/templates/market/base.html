@@ -115,6 +115,14 @@
             Sign up
           </a>
         {% endif %}
+        
+      {% if user.is_authenticated and user.is_staff %}
+    <a href="{% url 'moderation_dashboard' %}"
+     class="text-sm font-medium hover:text-teal-600">
+    Admin panel
+  </a>
+{% endif %}
+
       </div>
     </div>
   </header>
