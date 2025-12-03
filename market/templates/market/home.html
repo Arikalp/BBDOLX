@@ -30,10 +30,42 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-2 text-xs">
-      <button class="px-3 py-1.5 rounded-full border hover:border-teal-500">Newest first</button>
-      <button class="px-3 py-1.5 rounded-full border hover:border-teal-500">Lowest price</button>
-      <button class="px-3 py-1.5 rounded-full border hover:border-teal-500">Highest price</button>
-    </div>
+
+  <!-- Newest First -->
+  <a href="?sort=newest"
+     class="px-3 py-1.5 rounded-full border 
+            {% if request.GET.sort == 'newest' or not request.GET.sort %}
+              border-teal-500 bg-teal-50 text-teal-700
+            {% else %}
+              hover:border-teal-500
+            {% endif %}">
+    Newest first
+  </a>
+
+  <!-- Lowest Price -->
+  <a href="?sort=low"
+     class="px-3 py-1.5 rounded-full border 
+            {% if request.GET.sort == 'low' %}
+              border-teal-500 bg-teal-50 text-teal-700
+            {% else %}
+              hover:border-teal-500
+            {% endif %}">
+    Lowest price
+  </a>
+
+  <!-- Highest Price -->
+  <a href="?sort=high"
+     class="px-3 py-1.5 rounded-full border 
+            {% if request.GET.sort == 'high' %}
+              border-teal-500 bg-teal-50 text-teal-700
+            {% else %}
+              hover:border-teal-500
+            {% endif %}">
+    Highest price
+  </a>
+
+</div>
+
   </section>
 
   <!-- QUICK CATEGORIES (STATIC + PRO LOOK) -->
@@ -72,32 +104,17 @@
     </div>
   </section>
 
-  <!-- INFO STRIP -->
-  <section class="grid md:grid-cols-3 gap-3 text-xs">
-    <div class="bg-white rounded-2xl shadow-sm px-4 py-3 flex items-center gap-3">
-      <div class="h-8 w-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 text-lg">🎓</div>
-      <div><p class="font-semibold">Only BBD Students</p><p class="text-slate-500">Verified email login</p></div>
-    </div>
-    <div class="bg-white rounded-2xl shadow-sm px-4 py-3 flex items-center gap-3">
-      <div class="h-8 w-8 rounded-full bg-sky-50 flex items-center justify-center text-sky-600 text-lg">🤝</div>
-      <div><p class="font-semibold">Meet on Campus</p><p class="text-slate-500">No delivery issues</p></div>
-    </div>
-    <div class="bg-white rounded-2xl shadow-sm px-4 py-3 flex items-center gap-3">
-      <div class="h-8 w-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 text-lg">⚠️</div>
-      <div><p class="font-semibold">Verified Listings</p><p class="text-slate-500">Safe marketplace</p></div>
-    </div>
-  </section>
-
+  
   <!-- ITEMS GRID -->
   <section class="space-y-3">
     <h2 class="text-lg font-semibold">Fresh Recommendations</h2>
-
+    
     {% if products %}
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {% for product in products %}
-          <a href="{% url 'product_detail' product.pk %}" class="bg-white rounded-2xl shadow-sm hover:shadow-md transition border group">
-
-            <div class="relative aspect-[4/3] bg-slate-100">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {% for product in products %}
+      <a href="{% url 'product_detail' product.pk %}" class="bg-white rounded-2xl shadow-sm hover:shadow-md transition border group">
+        
+        <div class="relative aspect-[4/3] bg-slate-100">
               <img src="{{ product.image.url }}" class="w-full h-full object-cover group-hover:scale-105 transition">
               <div class="absolute top-2 right-2 h-8 w-8 bg-white rounded-full shadow flex items-center justify-center">❤️</div>
             </div>
@@ -110,13 +127,29 @@
           </a>
         {% endfor %}
       </div>
-    {% else %}
+      {% else %}
       <div class="bg-white rounded-xl p-8 text-center text-sm text-slate-500">
         No items found.  
         <a href="{% url 'product_add' %}" class="block mt-2 text-teal-600 underline">Post your first ad</a>
       </div>
-    {% endif %}
-  </section>
-
-</div>
-{% endblock %}
+      {% endif %}
+    </section>
+    
+    <!-- INFO STRIP -->
+    <section class="grid md:grid-cols-3 gap-3 text-xs">
+      <div class="bg-white rounded-2xl shadow-sm px-4 py-3 flex items-center gap-3">
+        <div class="h-8 w-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 text-lg">🎓</div>
+        <div><p class="font-semibold">Only BBD Students</p><p class="text-slate-500">Verified email login</p></div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm px-4 py-3 flex items-center gap-3">
+        <div class="h-8 w-8 rounded-full bg-sky-50 flex items-center justify-center text-sky-600 text-lg">🤝</div>
+        <div><p class="font-semibold">Meet on Campus</p><p class="text-slate-500">No delivery issues</p></div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm px-4 py-3 flex items-center gap-3">
+        <div class="h-8 w-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 text-lg">⚠️</div>
+        <div><p class="font-semibold">Verified Listings</p><p class="text-slate-500">Safe marketplace</p></div>
+      </div>
+    </section>
+  </div>
+  {% endblock %}
+  

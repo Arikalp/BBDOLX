@@ -31,4 +31,8 @@ urlpatterns = [
 
     # ---------- NOTIFICATIONS ----------
     path('notif/read/<int:pk>/', views.mark_notification_read, name='mark_notification_read'),
+    path('profile/', views.edit_profile, name='edit_profile'),
+    path("accounts/profile/", views.profile_view, name="profile"),
+
+
 ]

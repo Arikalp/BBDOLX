@@ -3,16 +3,22 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
 
+# ---------- USER PROFILE ----------
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone = models.CharField(max_length=15, blank=True)
+    whatsapp = models.CharField(max_length=15, blank=True)   # ✅ new field
     branch = models.CharField(max_length=100, blank=True)
     year = models.CharField(max_length=10, blank=True)
+    hide_name = models.BooleanField(default=False)   # 👈 NEW FIELD
+
 
     def __str__(self):
         return self.user.username
 
+
+# ---------- CATEGORY ----------
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -21,6 +27,8 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+
+# ---------- PRODUCT ----------
 
 class Product(models.Model):
     CONDITION_CHOICES = [
@@ -33,8 +41,7 @@ class Product(models.Model):
         ('PENDING', 'Pending Review'),
         ('APPROVED', 'Approved'),
         ('REJECTED', 'Rejected'),
-        ('SOLD', 'Sold Out'),          
-
+        ('SOLD', 'Sold Out'),
     ]
 
     title = models.CharField(max_length=200)
@@ -61,11 +68,13 @@ class Product(models.Model):
         choices=STATUS_CHOICES,
         default='PENDING'
     )
-    rejection_reason = models.TextField(blank=True, null=True)  # optional
+    rejection_reason = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.title
 
+
+# ---------- EMAIL OTP ----------
 
 class EmailOTP(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -78,7 +87,10 @@ class EmailOTP(models.Model):
 
     def __str__(self):
         return f"{self.user.username} – {self.otp}"
-    
+
+
+# ---------- NOTIFICATIONS ----------
+
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.CharField(max_length=255)
@@ -89,3 +101,16 @@ class Notification(models.Model):
         return f"{self.user.username} - {self.message[:20]}"
 
 
+# ---------- PROFILE SIGNAL (auto create/update) ----------
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_or_update_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+    else:
+        # existing user: just save profile if it exists
+        if hasattr(instance, "profile"):
+            instance.profile.save()

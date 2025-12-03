@@ -8,6 +8,9 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.http import JsonResponse
+from .forms import StudentRegisterForm, ProductForm, ProfileForm
+from .models import Product, Category, EmailOTP, Notification, Profile
+
 
 import random
 import requests
@@ -21,6 +24,7 @@ from .forms import StudentRegisterForm, ProductForm
 def home(request):
     query = request.GET.get("q", "")
     category_slug = request.GET.get("category", "")
+    sort = request.GET.get('sort', 'newest')
 
     # only active + approved listings on home
     products = Product.objects.filter(
@@ -37,6 +41,17 @@ def home(request):
 
     if category_slug:
         products = products.filter(category__slug=category_slug)
+
+    # Sorting
+    if sort == "low":
+        products = products.order_by('price')
+    elif sort == "high":
+        products = products.order_by('-price')
+    else:
+        products = products.order_by('-created_at')  # newest first
+
+    categories = Category.objects.all()
+
 
     categories = Category.objects.all()
 
@@ -105,6 +120,12 @@ def register(request):
             user.set_password(form.cleaned_data["password"])
             user.is_active = False
             user.save()
+            # ✅ create/update Profile with WhatsApp number from form
+            whatsapp = form.cleaned_data.get("whatsapp", "")
+            Profile.objects.update_or_create(
+                user=user,
+                defaults={"whatsapp": whatsapp}
+            )
 
             send_otp_email(request, user)
             request.session["pending_user_id"] = user.id
@@ -215,6 +236,42 @@ def mark_as_sold(request, pk):
     messages.success(request, "Listing marked as sold.")
     return redirect("my_listings")
 
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def edit_profile(request):
+    # make sure profile exists
+    profile, created = Profile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        form = ProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect("edit_profile")
+    else:
+        form = ProfileForm(instance=profile)
+
+    return render(request, "market/edit_profile.html", {"form": form})
+
+
+@login_required
+def profile_view(request):
+    # Get or create profile for the logged-in user
+    profile, created = Profile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        form = ProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect("profile")   # name we'll use in urls.py
+    else:
+        form = ProfileForm(instance=profile)
+
+    return render(request, "market/profile.html", {
+        "form": form,
+    })
 
 @login_required
 def my_listings(request):
