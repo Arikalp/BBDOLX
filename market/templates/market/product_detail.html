@@ -40,26 +40,36 @@
     <!-- SELLER CARD -->
     <div class="bg-white rounded-2xl shadow-sm p-4 space-y-2">
       <p class="text-sm font-semibold">Seller details</p>
-      <p class="text-sm">{{ product.owner.username }}</p>
-      <p class="text-xs text-slate-500">{{ product.owner.email }}</p>
+      
+      {% if user.is_authenticated %}
+        <p class="text-sm">{{ product.owner.username }}</p>
+        <p class="text-xs text-slate-500">{{ product.owner.email }}</p>
 
-      {% if product.owner.profile.whatsapp %}
-        <p class="text-xs text-slate-500">
-          WhatsApp: {{ product.owner.profile.whatsapp }}
-        </p>
+        {% if product.owner.profile.whatsapp %}
+          <p class="text-xs text-slate-500">
+            WhatsApp: {{ product.owner.profile.whatsapp }}
+          </p>
 
-        {% if product.status != 'SOLD' %}
-          <a href="https://wa.me/{{ product.owner.profile.whatsapp }}?text=Hi%2C%20I%20saw%20your%20BBDOLX%20ad%20for%3A%20{{ product.title|urlencode }}"
-             target="_blank"
-             class="inline-flex items-center gap-2 mt-2 bg-green-500 text-white px-4 py-2 rounded-full text-xs font-semibold hover:bg-green-600">
-            💬 Chat on WhatsApp
-          </a>
+          {% if product.status != 'SOLD' %}
+            <a href="https://wa.me/{{ product.owner.profile.whatsapp }}?text=Hi%2C%20I%20saw%20your%20BBDOLX%20ad%20for%3A%20{{ product.title|urlencode }}"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="inline-flex items-center gap-2 mt-2 bg-green-500 text-white px-4 py-2 rounded-full text-xs font-semibold hover:bg-green-600">
+              💬 Chat on WhatsApp
+            </a>
+          {% endif %}
         {% endif %}
-      {% endif %}
 
-      <p class="text-xs text-slate-500 mt-2">
-        Meet only inside campus and never share OTPs, passwords or card details.
-      </p>
+        <p class="text-xs text-slate-500 mt-2">
+          Meet only inside campus and never share OTPs, passwords or card details.
+        </p>
+      {% else %}
+        <p class="text-sm text-slate-600 mb-3">Please log in to view seller contact information</p>
+        <a href="{% url 'login' %}?next={{ request.path }}"
+           class="inline-block w-full text-center bg-teal-500 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-teal-600">
+          Login to Contact Seller
+        </a>
+      {% endif %}
     </div>
 
     {% if user == product.owner %}
